@@ -1,0 +1,15 @@
+call convert dualhovu
+call convert dualhsxs
+call convert dualhuov
+call convert ho20ffff
+call convert ho2eff2e
+call convert ho4f893d
+call convert ho88ffff
+call convert hoa0a0ff
+call convert hoffe457
+call convert hoffff20
+call convert horizont
+call convert snap
+call convert triphsxs
+call convert vertical
+call convert voffff20

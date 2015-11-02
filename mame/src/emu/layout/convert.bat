@@ -1,0 +1,1 @@
+file2str.exe %1.lay %1.lh layout_%1

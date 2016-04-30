@@ -41,6 +41,8 @@ const game_driver * const drivers[] =
 
 	DRIVER( defenderg )
 	DRIVER( stargate )
-	DRIVER(robotron)
+	DRIVER( robotron )
+	DRIVER( inferno )
+	DRIVER( blaster )
 
 #endif	/* DRIVER_RECURSIVE */

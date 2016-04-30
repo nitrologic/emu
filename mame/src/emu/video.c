@@ -1451,10 +1451,11 @@ void video_frame_update(running_machine *machine, int debug)
 	/* draw the user interface */
 	ui_update_and_render(machine);
 
+#ifdef throttle
 	/* if we're throttling, synchronize before rendering */
 	if (!debug && !skipped_it && effective_throttle(machine))
 		update_throttle(machine, current_time);
-
+#endif
 	/* ask the OSD to update */
 	profiler_mark_start(PROFILER_BLIT);
 	osd_update(machine, !debug && skipped_it);

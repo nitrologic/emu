@@ -133,7 +133,7 @@ static int win_physical_height;
 static DWORD last_event_check;
 
 // debugger
-static int in_background;
+static int isActiveApp;
 
 static int ui_temp_pause;
 static int ui_temp_was_paused;
@@ -1192,6 +1192,68 @@ static int complete_create(win_window_info *window)
 
 
 
+STICKYKEYS g_StartupStickyKeys = { sizeof(STICKYKEYS), 0 };
+TOGGLEKEYS g_StartupToggleKeys = { sizeof(TOGGLEKEYS), 0 };
+FILTERKEYS g_StartupFilterKeys = { sizeof(FILTERKEYS), 0 };
+
+HHOOK g_hKeyboardHook;
+BOOL g_bFullscreen;
+int isActiveApp;
+
+void AllowAccessibilityShortcutKeys(int allowKeys)
+{
+	if (allowKeys)
+	{
+		SystemParametersInfo(SPI_SETSTICKYKEYS, sizeof(STICKYKEYS), &g_StartupStickyKeys, 0);
+		SystemParametersInfo(SPI_SETTOGGLEKEYS, sizeof(TOGGLEKEYS), &g_StartupToggleKeys, 0);
+		SystemParametersInfo(SPI_SETFILTERKEYS, sizeof(FILTERKEYS), &g_StartupFilterKeys, 0);
+	}
+
+	else
+	{
+		// turn off all accessibility options
+		STICKYKEYS sk = { sizeof(STICKYKEYS), 0 };
+		SystemParametersInfo(SPI_SETSTICKYKEYS, sizeof(STICKYKEYS), &sk, 0);
+
+		TOGGLEKEYS tk = { sizeof(TOGGLEKEYS), 0 };
+		SystemParametersInfo(SPI_SETTOGGLEKEYS, sizeof(TOGGLEKEYS), &tk, 0);
+
+		FILTERKEYS fk = { sizeof(FILTERKEYS), 0 };
+		SystemParametersInfo(SPI_SETFILTERKEYS, sizeof(FILTERKEYS), &fk, 0);
+	}
+}
+
+void killSticky(){
+	// Save the current sticky/toggle/filter key settings so they can be restored them later
+	SystemParametersInfo(SPI_GETSTICKYKEYS, sizeof(STICKYKEYS), &g_StartupStickyKeys, 0);
+	SystemParametersInfo(SPI_GETTOGGLEKEYS, sizeof(TOGGLEKEYS), &g_StartupToggleKeys, 0);
+	SystemParametersInfo(SPI_GETFILTERKEYS, sizeof(FILTERKEYS), &g_StartupFilterKeys, 0);
+}
+
+LRESULT CALLBACK LowLevelKeyboardProc(int nCode, WPARAM wParam, LPARAM lParam)
+{
+	if (nCode < 0 || nCode != HC_ACTION)  // do not process message 
+		return CallNextHookEx(g_hKeyboardHook, nCode, wParam, lParam);
+
+	int bEatKeystroke = 0;
+	KBDLLHOOKSTRUCT* p = (KBDLLHOOKSTRUCT*)lParam;
+	switch (wParam)
+	{
+	case WM_KEYDOWN:
+	case WM_KEYUP:
+	{
+		bEatKeystroke = (// g_bFullscreen && g_bWindowActive && 
+			((p->vkCode == VK_LWIN) || (p->vkCode == VK_RWIN)));
+		break;
+	}
+	}
+
+	if (bEatKeystroke)
+		return 1;
+	else
+		return CallNextHookEx(g_hKeyboardHook, nCode, wParam, lParam);
+}
+
 //============================================================
 //  winwindow_video_window_proc
 //  (window thread)
@@ -1338,7 +1400,12 @@ LRESULT CALLBACK winwindow_video_window_proc(HWND wnd, UINT message, WPARAM wpar
 
 		// track whether we are in the foreground
 		case WM_ACTIVATEAPP:
-			in_background = !wparam;
+			isActiveApp = wparam;
+			if (isActiveApp){
+				AllowAccessibilityShortcutKeys(1);
+			}else{
+				AllowAccessibilityShortcutKeys(0);
+			}
 			break;
 
 		// close: cause MAME to exit

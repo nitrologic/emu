@@ -197,7 +197,7 @@ IF(WIN32)
 
 ADD_EXECUTABLE(testmame
 ${mame_src}
-${mame_sega}
+#${mame_sega}
 ${mame_williams}
 ${mame_osd_windows}
 ${mame_h}

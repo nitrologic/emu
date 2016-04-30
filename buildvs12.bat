@@ -1,8 +1,8 @@
 rem echo off
-mkdir ..\..\..\mame_build_vs12
-pushd ..\..\..\mame_build_vs12
+mkdir ..\mame_build_vs12
+pushd ..\mame_build_vs12
 
-cmake -G"Visual Studio 12 2013" ..\nitro\native\emulator
+cmake -G"Visual Studio 12 2013" ..\emu
 
 call "%VS120COMNTOOLS%vsvars32.bat"
 MSBuild devmame.sln /maxcpucount /p:Configuration=Release
